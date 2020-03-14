@@ -1,0 +1,423 @@
+CREATE DATABASE Project_2;
+
+USE Project_2;
+
+--photo 1
+CREATE TABLE photo(
+photo_id int NOT NULL PRIMARY KEY IDENTITY,
+file_name nvarchar(250) NOT NULL,
+created_date datetime DEFAULT GETDATE() NOT NULL,
+--created_date datetime NOT NULL,
+caption nvarchar(500) NULL
+
+--CONSTRAINT photo_date
+--DEFAULT GETDATE() FOR created_date
+);
+
+--person 2
+CREATE TABLE person(
+person_id int NOT NULL PRIMARY KEY IDENTITY,	
+first_name nvarchar(50) NOT NULL,	
+last_name nvarchar(50) NOT NULL,
+email nvarchar(150) NOT NULL,
+password_hash varbinary(75) NOT NULL,
+
+profile_photo_id int NULL
+CONSTRAINT fk_person_photo_id
+FOREIGN KEY (profile_photo_id) 
+REFERENCES photo (photo_id)
+);
+
+--post 3
+CREATE TABLE post(
+post_id int NOT NULL PRIMARY KEY IDENTITY,
+title nvarchar(250) NOT NULL,
+description nvarchar(max) NOT NULL,
+created_date datetime DEFAULT GETDATE() NOT NULL,
+last_modified_date datetime DEFAULT GETDATE() NOT NULL,
+
+person_id int NOT NULL
+CONSTRAINT fk_post_person_id
+FOREIGN KEY (person_id) 
+REFERENCES person (person_id)
+);
+
+--post_photo 4
+CREATE TABLE post_photo(
+post_photo_id int NOT NULL PRIMARY KEY IDENTITY,
+
+post_id int NOT NULL
+CONSTRAINT fk_post_photo_post_id
+FOREIGN KEY (post_id)
+REFERENCES post (post_id),
+
+photo_id int NOT NULL
+CONSTRAINT fk_post_photo_photo_id
+FOREIGN KEY (photo_id)
+REFERENCES photo (photo_id)
+);
+
+--tag 5
+CREATE TABLE tag(
+tag_id int NOT NULL PRIMARY KEY IDENTITY,
+tag_name nvarchar(50) NOT NULL
+);
+
+--post_tag 6
+CREATE TABLE post_tag(
+post_tag_id int NOT NULL PRIMARY KEY IDENTITY,
+
+post_id int NOT NULL
+CONSTRAINT fk_post_tag_post_id
+FOREIGN KEY (post_id)
+REFERENCES post (post_id),
+
+tag_id int NOT NULL
+CONSTRAINT fk_post_tag_tag_id
+FOREIGN KEY (tag_id)
+REFERENCES tag (tag_id)
+);
+
+--post_like 7
+CREATE TABLE post_like(
+post_like_id int NOT NULL PRIMARY KEY IDENTITY,
+
+post_id int NOT NULL
+CONSTRAINT fk_post_like_post_id
+FOREIGN KEY (post_id)
+REFERENCES post (post_id),
+
+person_id int NOT NULL
+CONSTRAINT fk_post_like_person_id
+FOREIGN KEY (person_id)
+REFERENCES person(person_id)
+);
+
+--read_post 8
+CREATE TABLE read_post(
+read_post_id int NOT NULL PRIMARY KEY IDENTITY,
+
+post_id int NOT NULL
+CONSTRAINT fk_read_post_post_id
+FOREIGN KEY (post_id)
+REFERENCES post (post_id),
+
+person_id int NOT NULL
+CONSTRAINT fk_read_post_person_id
+FOREIGN KEY (person_id)
+REFERENCES person(person_id),
+
+created_date datetime DEFAULT GETDATE() NOT NULL,
+);
+
+--post_comment 9
+CREATE TABLE post_comment(
+post_comment_id int NOT NULL PRIMARY KEY IDENTITY,
+
+post_id int NOT NULL
+CONSTRAINT fk_post_comment_post_id
+FOREIGN KEY (post_id)
+REFERENCES post (post_id),
+
+person_id int NOT NULL
+CONSTRAINT fk_post_comment_person_id
+FOREIGN KEY (person_id)
+REFERENCES person(person_id),
+
+comment nvarchar(max) NOT NULL,
+created_date datetime DEFAULT GETDATE() NOT NULL
+);
+
+/*
+	Inserting Data
+*/
+-- insert photo 
+SET IDENTITY_INSERT photo ON
+INSERT INTO photo (photo_id, file_name, created_date, caption)
+VALUES
+(1 ,'barbara_profile.jpg', '2019-06-15', 'Barbara''s profile'),
+(2, 'img_9203710.jpg', '2019-06-15', 'James'' Profile'),
+(3, 'dcim_38118385.jpg', '2019-06-15', 'Mary'),
+(4, 'knitting.jpg', '2019-06-15', 'Knitted Touques'),
+(5, 'img_28391910488.jpg', '2019-06-15', 'Richard'),
+(6, 'img_21838392835.jpg', '2019-06-15', 'Mickey Mouse Cookies'),
+(7, 'img_38201884043.jpg', '2019-06-15', 'So cute!'),
+(8, 'img_28320384855.jpg', '2019-06-15', 'Smiling already!'),
+(9, 'rainbow.jpg', '2019-06-15', 'Rainbow Quilt'),
+(10, 'stereo1.jpg', '2019-06-15', 'Front Panel'),
+(11, 'stereo2.jpg', '2019-06-15', 'Bass Speakers Installed'),
+(12, 'new_shed.jpg', '2019-06-15', 'Shed inside empty'),
+(13, 'rose.jpg', '2019-06-15', 'Rose'),
+(14, 'putter.jpg', '2019-06-15', 'Putter'),
+(15, 'nine-iron.jpg', '2019-06-15', '9 Iron'),
+(16, 'driver.jpg', '2019-06-15', 'Driver')
+SET IDENTITY_INSERT photo OFF;
+
+--insert person
+SET IDENTITY_INSERT person ON
+INSERT INTO person(person_id, first_name, last_name, email, password_hash, profile_photo_id) 
+VALUES
+(1, 'Barbara', 'Hodge', 'b.hodge@company.com', PWDENCRYPT('P@ssword!'), 1),
+(2, 'James', 'Buckles', 'j.buckles@company.com', PWDENCRYPT('Awesome8'), 2),
+(3, 'Natalie', 'Wilhite', 'bestest.forever@example.com', PWDENCRYPT('CakeIsBest'), NULL),
+(4, 'Mary', 'Barnett', 'lifeisahighway@example.com', PWDENCRYPT('goGOgo'), 3),
+(5, 'Richard', 'Tipton', 'tippertapper266602@gmail.com', PWDENCRYPT('tiptap'), 5)
+SET IDENTITY_INSERT person OFF;
+
+--insert post
+SET IDENTITY_INSERT post ON
+INSERT INTO post(post_id, title, description, created_date, last_modified_date, person_id)
+VALUES
+(1, 'Mickey Mouse Cookies', 'I found this great recipe for sugar cookies and a new Mickey Mouse cookie cutter.', '2019-04-14', '2019-04-15', 1),
+(2, 'Touques for infants', 'I''m knitting touques for our grandchild that should be born soon!', '2019-02-15', '2019-02-16', 3),
+(3, 'Our newest family member!', 'Congratulations to our daughter on their new bundle of joy! Theresa May - Born March 3, 2019.', '2019-03-04', '2019-03-04', 3),
+(4, 'Rainbow Quilt', 'Beautiful new rainbow quilt for our newest granddaughter.', '2019-03-29', '2019-04-01', 3),
+(5, 'New Car Stereo and Speakers', 'Best Bass Ever! You can hear me from 5 blocks away!', '2019-05-09', '2019-05-09', 2),
+(6, 'Garden Shed', 'New garden shed has room for the lawn mowers and all our garden tools.', '2019-05-22', '2019-05-22', 2),
+(7, 'Great way to hang pictures', 'It''s simple and cost effective!', '2019-04-27', '2019-04-27', 4),
+(8, 'Beautiful colour, beautiful smell', 'Found a great place to buy the best roses!', '2019-04-14', '2019-04-16', 4),
+(9, 'Set of golf clubs for sale', 'A friend of mine is selling his set of clubs before he moves to Saskatchewan.', '2019-05-12', '2019-05-15', 2),
+(10, 'Change your own oil, save hundreds!', 'Mechanics are too expensive, and it''s not that hard to do it yourself.', '2019-02-22', '2019-02-22', 2),
+(11, 'Awesome Floor Mats', 'Keep your car clean with these awesome car mats!', '2019-03-03', '2019-03-03', 2)
+SET IDENTITY_INSERT post OFF;
+
+--insert post_photo
+SET IDENTITY_INSERT post_photo ON
+INSERT INTO post_photo(post_photo_id, post_id, photo_id)
+VALUES
+(1, 1, 6),
+(2, 2, 4),
+(3, 3, 8),
+(4, 3, 7),
+(5, 4, 9),
+(6, 5, 11),
+(7, 5, 10),
+(8, 6, 12),
+(9, 8, 13),
+(10, 9, 15),
+(11, 9, 16),
+(12, 9, 14)
+SET IDENTITY_INSERT post_photo OFF;
+
+-- post_like
+SET IDENTITY_INSERT post_like ON
+INSERT INTO post_like(post_like_id, post_id, person_id)
+VALUES
+(1, 1, 3),
+(2, 2, 4),
+(3, 3, 1),
+(4, 3, 2),
+(5, 3, 4),
+(6, 3, 5),
+(7, 5, 5),
+(8, 9, 5)
+SET IDENTITY_INSERT post_like OFF;
+
+-- read_post
+SET IDENTITY_INSERT read_post ON
+INSERT INTO read_post(read_post_id, post_id, person_id, created_date)
+VALUES
+(1, 1, 4, DEFAULT),
+(2, 1, 3, DEFAULT),
+(3, 2, 4, DEFAULT),
+(4, 3, 1, DEFAULT),
+(5, 3, 2, DEFAULT),
+(6, 3, 4, DEFAULT),
+(7, 3, 5, DEFAULT),
+(8, 4, 1, DEFAULT),
+(9, 5, 5, DEFAULT),
+(10, 6, 1, DEFAULT),
+(11, 6, 5, DEFAULT),
+(12, 7, 1, DEFAULT),
+(13, 9, 5, DEFAULT),
+(14, 10, 5, DEFAULT),
+(15, 11, 1, DEFAULT)
+SET IDENTITY_INSERT read_post OFF;
+
+-- post_comment
+SET IDENTITY_INSERT post_comment ON
+INSERT INTO post_comment(post_comment_id, post_id, person_id, comment, created_date)
+VALUES
+(1, 1, 3, 'I''m going to try those myself! - Natalie', DEFAULT ),
+(2, 3, 1, 'Congratulations! - Barbara,', DEFAULT ),
+(3, 3, 2, 'How does it feel to be a grandma? - James', DEFAULT ),
+(4, 4, 1, 'Can you make me one next? - Barbara', DEFAULT ),
+(5, 6, 1, 'What colour are you going to paint your shed? - Barbara', DEFAULT ),
+(6, 9, 5, 'I need a good set of club; I''ll take them! - Richard', DEFAULT )
+SET IDENTITY_INSERT post_comment OFF;
+
+-- tag
+SET IDENTITY_INSERT tag ON
+INSERT INTO tag (tag_id, tag_name)
+VALUES
+(1, 'music'),
+(2, 'shopping'),
+(3, 'baking'),
+(4, 'cooking'),
+(5, 'crafts'),
+(6, 'DIY'),
+(7, 'cars'),
+(8, 'home repair'),
+(9, 'sports');
+SET IDENTITY_INSERT tag OFF;
+
+-- post_tag
+SET IDENTITY_INSERT post_tag ON
+INSERT INTO post_tag (post_tag_id, post_id, tag_id)
+VALUES
+
+(1, 1, 3),
+(2, 1, 4),
+(3, 1, 5),
+(4, 2, 5),
+(5, 2, 6),
+(6, 4, 5),
+(7, 4, 6),
+(8, 5, 7),
+(9, 5, 6),
+(10, 6, 6),
+(11, 6, 8),
+(12, 7, 8),
+(13, 9, 9),
+(14, 10, 6),
+(15, 10, 7),
+(16, 11, 7);
+
+SET IDENTITY_INSERT post_tag OFF;
+
+
+SELECT * FROM photo;
+SELECT * FROM person;
+SELECT * FROM post_photo;
+SELECT * FROM post_like;
+SELECT * FROM post_comment;
+SELECT * FROM post_tag;
+SELECT * FROM tag;
+SELECT * FROM read_post;
+SELECT * FROM post;
+
+/*
+	creating queries
+*/
+
+--1
+SELECT post.title, tag.tag_name
+FROM post
+LEFT JOIN post_tag 
+ON post.post_id = post_tag.post_id
+JOIN tag
+ON tag.tag_id = post_tag.tag_id
+WHERE post_tag.tag_id = 6
+GROUP BY post.title, tag.tag_name
+ORDER BY title DESC
+
+--2
+SELECT post.title, tag.tag_name
+FROM post
+LEFT JOIN post_tag 
+ON post.post_id = post_tag.post_id
+JOIN tag
+ON tag.tag_id = post_tag.tag_id
+WHERE post.title = 'Mickey Mouse Cookies';
+
+--3
+SELECT post.title, COUNT(post_tag_id) AS 'Number of Tags'
+FROM post
+LEFT JOIN post_tag ON post.post_id = post_tag.post_id
+GROUP BY post.title
+ORDER BY COUNT(post_tag_id) DESC
+
+--4
+SELECT post.title, COUNT(post_tag_id) AS 'Number of Tags'
+FROM post
+LEFT JOIN post_tag ON post.post_id = post_tag.post_id
+WHERE post.post_id NOT IN (SELECT post_tag.post_id FROM post_tag)
+GROUP BY post.title
+
+--5
+SELECT tag_name, COUNT(post_tag.post_id) AS 'Number of Tags'
+FROM tag
+FULL OUTER JOIN post_tag ON tag.tag_id = post_tag.tag_id
+GROUP BY tag_name
+ORDER BY COUNT(post_tag.post_id) DESC
+
+--6
+SELECT post.post_id, post.title, person.first_name
+FROM person
+INNER JOIN post ON person.person_id = post.person_id
+INNER JOIN read_post ON post.post_id = read_post.post_id
+GROUP BY post.title, post.post_id, person.first_name
+
+
+--7
+SELECT post.post_id, post.title, person.first_name
+FROM person
+LEFT JOIN post ON person.person_id = post.person_id
+LEFT JOIN read_post ON post.post_id = read_post.post_id
+WHERE post.post_id NOT IN (SELECT read_post.post_id FROM read_post)
+GROUP BY post.title, post.post_id, person.first_name
+
+--8
+SELECT post.post_id, post.title, person.first_name, post.created_date, post.last_modified_date
+FROM post
+LEFT JOIN person ON person.person_id = post.person_id
+WHERE last_modified_date NOT IN (SELECT created_date FROM post)
+
+--9
+SELECT post_id, title, person.first_name 
+FROM post 
+LEFT JOIN person ON person.person_id = post.person_id 
+WHERE post.post_id NOT IN (SELECT post_id FROM post_photo)
+
+--10
+SELECT title, COUNT(post_like_id) AS 'Number of Likes' 
+FROM post 
+FULL OUTER JOIN post_like ON post.post_id = post_like.post_id 
+GROUP BY post.title ORDER BY COUNT(post_like_id) DESC
+
+--11
+SELECT TOP 1 person.first_name, person.last_name, COUNT(post_id) AS 'Number of Posts' 
+FROM person 
+FULL OUTER JOIN post ON post.person_id = person.person_id 
+GROUP BY first_name, last_name ORDER BY 'Number of Posts' DESC;
+
+SELECT TOP 1 person.first_name, person.last_name, COUNT(post_id) AS 'Number of Posts' 
+FROM person 
+FULL OUTER JOIN post ON post.person_id = person.person_id 
+GROUP BY first_name, last_name ORDER BY 'Number of Posts';
+
+--12
+SELECT post.post_id, post.title, person.first_name AS 'author',
+post_comment.comment, P.first_name AS 'commenter' 
+FROM post 
+INNER JOIN person ON person.person_id = post.person_id
+LEFT JOIN post_comment ON post.post_id = post_comment.post_id
+LEFT JOIN person AS P ON P.person_id = post_comment.person_id
+WHERE post.post_id IN (SELECT post_id FROM post_photo)
+ORDER BY post.post_id
+
+--13
+SELECT post.post_id, title, COUNT(DISTINCT read_post.post_id) AS 'reads'
+							,COUNT(DISTINCT post_like.post_id) AS 'likes'
+							,COUNT(DISTINCT post_comment.post_id) AS 'comments'
+FROM post
+LEFT JOIN read_post ON post.post_id = read_post.post_id
+LEFT JOIN post_like ON post.post_id = post_like.post_id
+LEFT JOIN post_comment ON post.post_id = post_comment.post_id
+GROUP BY post.post_id, title, read_post.post_id
+
+
+
+--14
+SELECT photo.photo_id, photo.caption, photo.file_name, 
+(SELECT 'Profile Photo' WHERE person.profile_photo_id IN (SELECT photo_id FROM photo))  AS 'type' 
+FROM photo
+INNER JOIN person ON photo.photo_id = person.profile_photo_id
+UNION ALL
+SELECT photo.photo_id, photo.caption, photo.file_name, 
+(SELECT 'Post Photo'  WHERE post.post_id IN (SELECT post_id FROM post_photo))  AS 'type' 
+FROM photo
+INNER JOIN post_photo ON photo.photo_id = post_photo.photo_id
+INNER JOIN post ON post.post_id = post_photo.post_id
+
+
